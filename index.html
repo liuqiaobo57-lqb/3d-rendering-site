@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PULO 3D | Premium Architectural Visualization Studio</title>
+    <!-- 样式框架已本地化，不依赖外部 CDN（请勿删除 assets 文件夹） -->
+    <script src="assets/tailwind-3.4.17.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #B8935E;
+            --gold-light: #D4B896;
+            --dark: #1A1A1A;
+            --cream: #FAF8F5;
+            --warm-gray: #8A8580;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cream);
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+        
+        .font-serif {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+        }
+        
+        .nav-scrolled {
+            background-color: rgba(250, 248, 245, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+        }
+        
+        .hero-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%);
+        }
+        
+        .project-card {
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        
+        .project-card.hidden-card {
+            display: none;
+        }
+        
+        .project-card img {
+            transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .project-card:hover img {
+            transform: scale(1.05);
+        }
+        
+        .project-card .overlay {
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+        }
+        
+        .project-card:hover .overlay {
+            opacity: 1;
+        }
+        
+        .filter-btn.active {
+            background-color: var(--dark);
+            color: white;
+        }
+        
+        .service-line {
+            position: relative;
+        }
+        
+        .service-line::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: var(--gold);
+            transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .service-line:hover::after {
+            width: 100%;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .btn-primary {
+            background-color: var(--gold);
+            transition: all 0.4s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #A07B48;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(184, 147, 94, 0.3);
+        }
+        
+        .btn-outline {
+            border: 1px solid white;
+            transition: all 0.4s ease;
+        }
+        
+        .btn-outline:hover {
+            background-color: white;
+            color: var(--dark);
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .success-message {
+            background-color: #f0fdf4;
+            border: 1px solid #86efac;
+            color: #166534;
+        }
+        
+        .error-message {
+            background-color: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #b91c1c;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ======================================================== -->
+<!-- SITE CONFIGURATION - EASY TO EDIT                        -->
+<!-- 全站文字、作品、价格都在下面这段配置里集中修改            -->
+<!-- 图片放在 images 文件夹，改 image: "images/xxx.webp" 即可   -->
+<!-- 详细步骤见同目录《网站修改与发布指南.md》                  -->
+<!-- ======================================================== -->
+<script>
+const SITE_CONFIG = {
+    // Company Info
+    companyName: "PULO 3D",
+    email: "pulo3dstudio@gmail.com",
+    phone: "+86 13510245761",
+    
+    // Hero Section
+    heroTitle: "Architectural Visualization",
+    heroTitleItalic: "That Inspires",
+    heroSubtitle: "Premium photorealistic 3D rendering services for architects, developers, and designers worldwide. We transform your blueprints into stunning visual stories.",
+    
+    // Services Section
+    servicesTitle: "Our Services",
+    services: [
+        { name: "Exterior Rendering", desc: "Photorealistic building facades and exterior environments that showcase architectural design at its finest.", icon: "🏛️" },
+        { name: "Interior Visualization", desc: "Immersive interior spaces with precise lighting, materials, and atmospheric details.", icon: "🏠" },
+        { name: "Aerial & Bird's Eye", desc: "Stunning aerial perspectives and site plans that showcase context and master planning.", icon: "🚁" },
+        { name: "Landscape Design", desc: "Beautiful outdoor spaces, gardens, and hardscaping visualizations.", icon: "🌿" },
+        { name: "3D Animation & Film", desc: "Cinematic walkthrough animations that bring your projects to life in motion.", icon: "🎬" },
+        { name: "Virtual Reality Tours", desc: "Immersive VR experiences that let clients explore spaces before construction.", icon: "🥽" }
+    ],
+    
+    // Portfolio - Add/remove projects here
+    portfolioTitle: "Selected Works",
+    portfolioSubtitle: "A curated selection of our finest visualization projects from around the world.",
+    portfolio: [
+        { title: "The Elysium Residences", category: "residential", location: "Sydney, Australia", image: "images/portfolio-1.webp" },
+        { title: "Aurora Tower", category: "commercial", location: "New York, USA", image: "images/portfolio-2.webp" },
+        { title: "Villa Serenity", category: "interior", location: "Malibu, California", image: "images/portfolio-3.webp" },
+        { title: "Harbor Point", category: "residential", location: "Miami, Florida", image: "images/portfolio-4.webp" },
+        { title: "The Grand Meridian", category: "commercial", location: "London, UK", image: "images/portfolio-5.webp" },
+        { title: "Coastal Modern Estate", category: "residential", location: "Gold Coast, Australia", image: "images/portfolio-6.webp" },
+        { title: "Penthouse Collection", category: "interior", location: "Dubai, UAE", image: "images/portfolio-7.webp" },
+        { title: "Corporate Headquarters", category: "commercial", location: "Singapore", image: "images/portfolio-8.webp" }
+    ],
+    
+    // Process Section
+    processTitle: "How We Work",
+    process: [
+        { step: "01", title: "Project Brief", desc: "Share your plans, sketches, reference images, and project requirements." },
+        { step: "02", title: "3D Modeling", desc: "We build accurate 3D models based on your architectural documentation." },
+        { step: "03", title: "Draft & Feedback", desc: "Review initial drafts and provide feedback for refinements and adjustments." },
+        { step: "04", title: "Final Delivery", desc: "Receive high-resolution final renders ready for marketing and presentation." }
+    ],
+    
+    // Pricing Section
+    pricingTitle: "Transparent Pricing",
+    pricing: [
+        { name: "Starter", price: "$290", period: "per image", features: ["1 exterior/interior view", "4K resolution", "2 rounds of revisions", "5 business days delivery"], popular: false },
+        { name: "Professional", price: "$499", period: "per image", features: ["1 exterior/interior view", "8K resolution", "Unlimited revisions", "3 business days delivery", "Dedicated project manager", "Source files included"], popular: true },
+        { name: "Custom Package", price: "Contact", period: "for pricing", features: ["Multiple views", "Animation / VR", "Priority support", "Custom timeline", "Dedicated team", "Full copyright ownership"], popular: false }
+    ],
+    
+    // ==========================================================
+    // 【必改项】询盘表单收件设置：下面两种方案二选一即可
+    // 方案A（推荐）：注册 Formspree，把端点填进 formEndpoint，
+    //                形如 "https://formspree.io/f/abcdwxyz"
+    // 方案B（最省事）：只把 receiveEmail 填成你的邮箱，
+    //                系统会通过 FormSubmit 免费转发到你邮箱
+    // 两个都留空则表单不会发送，会提示你尚未配置
+    // 详细步骤见同目录《网站修改与发布指南.md》
+    // ==========================================================
+    formEndpoint: "",
+    receiveEmail: "pulo3dstudio@gmail.com"
+};
+</script>
+
+<!-- Navigation -->
+<nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-500 py-6">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between">
+        <a href="#home" class="text-white font-serif text-2xl md:text-3xl lg:text-4xl tracking-[0.1em] font-semibold nav-logo inline-flex items-center" id="nav-logo" style="line-height: 1;">
+            <span>PULO</span><span class="font-light ml-2">3D</span>
+        </a>
+        
+        <div class="hidden md:flex items-center gap-10">
+            <a href="#services" class="text-white text-sm tracking-wider nav-link transition-colors hover:text-[#D4B896]">Services</a>
+            <a href="#portfolio" class="text-white text-sm tracking-wider nav-link transition-colors hover:text-[#D4B896]">Portfolio</a>
+            <a href="#process" class="text-white text-sm tracking-wider nav-link transition-colors hover:text-[#D4B896]">Process</a>
+            <a href="#pricing" class="text-white text-sm tracking-wider nav-link transition-colors hover:text-[#D4B896]">Pricing</a>
+            <a href="#contact" class="text-white text-sm tracking-wider nav-link transition-colors hover:text-[#D4B896]">Contact</a>
+        </div>
+        
+        <button id="mobile-menu-btn" class="md:hidden text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white absolute top-full left-0 w-full shadow-lg">
+        <div class="px-6 py-8 flex flex-col gap-6">
+            <a href="#services" class="text-gray-800 text-sm tracking-wider">Services</a>
+            <a href="#portfolio" class="text-gray-800 text-sm tracking-wider">Portfolio</a>
+            <a href="#process" class="text-gray-800 text-sm tracking-wider">Process</a>
+            <a href="#pricing" class="text-gray-800 text-sm tracking-wider">Pricing</a>
+            <a href="#contact" class="text-gray-800 text-sm tracking-wider">Contact</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section id="home" class="relative h-screen min-h-[700px]">
+    <div class="absolute inset-0">
+        <img src="images/hero-main.webp" alt="Luxury Architecture" class="w-full h-full object-cover object-center">
+        <div class="hero-overlay absolute inset-0"></div>
+    </div>
+    
+    <div class="relative z-10 h-full flex items-center justify-center text-center text-white px-6">
+        <div class="max-w-4xl fade-in" style="animation: fadeInUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s forwards; opacity: 0;">
+            <p class="text-[#D4B896] tracking-[0.3em] text-xs md:text-sm mb-6 uppercase">Premium Architectural Visualization</p>
+            <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl font-light leading-tight mb-8">
+                Architectural<br><span class="italic font-light">Visualization</span><br><span class="italic text-[#D4B896]">That Inspires</span>
+            </h1>
+            <p class="text-gray-300 text-base md:text-lg max-w-2xl mx-auto mb-12 leading-relaxed font-light">
+                Premium photorealistic 3D rendering services for architects, developers, and designers worldwide. We transform your blueprints into stunning visual stories.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#portfolio" class="btn-primary px-10 py-4 text-sm tracking-widest uppercase text-white">View Portfolio</a>
+                <a href="#contact" class="btn-outline px-10 py-4 text-sm tracking-widest uppercase text-white">Request Quote</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-white animate-bounce">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-12 text-center fade-in">
+            <div>
+                <p class="font-serif text-4xl md:text-5xl text-[#B8935E] mb-2">500<span class="text-2xl">+</span></p>
+                <p class="text-gray-500 text-sm tracking-wider uppercase">Projects Completed</p>
+            </div>
+            <div>
+                <p class="font-serif text-4xl md:text-5xl text-[#B8935E] mb-2">12</p>
+                <p class="text-gray-500 text-sm tracking-wider uppercase">Years Experience</p>
+            </div>
+            <div>
+                <p class="font-serif text-4xl md:text-5xl text-[#B8935E] mb-2">40<span class="text-2xl">+</span></p>
+                <p class="text-gray-500 text-sm tracking-wider uppercase">Countries Served</p>
+            </div>
+            <div>
+                <p class="font-serif text-4xl md:text-5xl text-[#B8935E] mb-2">98<span class="text-2xl">%</span></p>
+                <p class="text-gray-500 text-sm tracking-wider uppercase">Client Satisfaction</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="py-24 md:py-32">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="text-center mb-20 fade-in">
+            <p class="text-[#B8935E] tracking-[0.3em] text-xs uppercase mb-4">What We Do</p>
+            <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl font-light">Our Services</h2>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
+            <div class="fade-in service-line pb-8 group cursor-pointer">
+                <div class="mb-6 overflow-hidden aspect-[3/2]">
+                    <img src="images/service-exterior.webp" alt="Exterior Rendering" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                </div>
+                <h3 class="font-serif text-2xl mb-3 group-hover:text-[#B8935E] transition-colors">Exterior Rendering</h3>
+                <p class="text-gray-500 leading-relaxed text-sm">Photorealistic building facades and exterior environments that showcase architectural design at its finest. From single-family homes to large-scale commercial developments.</p>
+            </div>
+            
+            <div class="fade-in service-line pb-8 group cursor-pointer">
+                <div class="mb-6 overflow-hidden aspect-[3/2]">
+                    <img src="images/service-interior.webp" alt="Interior Visualization" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                </div>
+                <h3 class="font-serif text-2xl mb-3 group-hover:text-[#B8935E] transition-colors">Interior Visualization</h3>
+                <p class="text-gray-500 leading-relaxed text-sm">Immersive interior spaces with precise lighting, materials, and atmospheric details. Every texture, reflection, and shadow crafted to photorealistic perfection.</p>
+            </div>
+            
+            <div class="fade-in service-line pb-8 group cursor-pointer">
+                <div class="mb-6 overflow-hidden aspect-[3/2]">
+                    <img src="images/service-aerial.webp" alt="Aerial Views" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                </div>
+                <h3 class="font-serif text-2xl mb-3 group-hover:text-[#B8935E] transition-colors">Aerial & Bird's Eye</h3>
+                <p class="text-gray-500 leading-relaxed text-sm">Stunning aerial perspectives and site plans that showcase context, surrounding environment, and master planning from dramatic viewpoints.</p>
+            </div>
+            
+            <div class="fade-in service-line pb-8 group cursor-pointer">
+                <div class="mb-6 overflow-hidden aspect-[3/2]">
+                    <img src="images/service-landscape.webp" alt="Landscape Design" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                </div>
+                <h3 class="font-serif text-2xl mb-3 group-hover:text-[#B8935E] transition-colors">Landscape Design</h3>
+                <p class="text-gray-500 leading-relaxed text-sm">Beautiful outdoor spaces, gardens, pools, and hardscaping visualizations that complement your architectural vision and enhance curb appeal.</p>
+            </div>
+            
+            <div class="fade-in service-line pb-8 group cursor-pointer">
+                <div class="mb-6 overflow-hidden aspect-[3/2]">
+                    <img src="images/service-animation.webp" alt="3D Animation" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                </div>
+                <h3 class="font-serif text-2xl mb-3 group-hover:text-[#B8935E] transition-colors">3D Animation & Film</h3>
+                <p class="text-gray-500 leading-relaxed text-sm">Cinematic walkthrough and flythrough animations that bring your projects to life in motion, perfect for presentations and marketing campaigns.</p>
+            </div>
+            
+            <div class="fade-in service-line pb-8 group cursor-pointer">
+                <div class="mb-6 overflow-hidden aspect-[3/2]">
+                    <img src="images/service-vr.webp" alt="Virtual Reality" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                </div>
+                <h3 class="font-serif text-2xl mb-3 group-hover:text-[#B8935E] transition-colors">Virtual Reality Tours</h3>
+                <p class="text-gray-500 leading-relaxed text-sm">Immersive VR experiences that let clients explore spaces interactively before construction begins, revolutionizing the design review process.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Portfolio Section -->
+<section id="portfolio" class="py-24 md:py-32 bg-white">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="text-center mb-12 fade-in">
+            <p class="text-[#B8935E] tracking-[0.3em] text-xs uppercase mb-4">Our Work</p>
+            <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl font-light mb-6">Selected Works</h2>
+            <p class="text-gray-500 max-w-2xl mx-auto">A curated selection of our finest visualization projects from around the world.</p>
+        </div>
+        
+        <!-- Filter Buttons -->
+        <div class="flex flex-wrap justify-center gap-4 mb-12 fade-in">
+            <button class="filter-btn active px-6 py-2 text-sm tracking-wider border border-gray-200 transition-all hover:border-gray-800" data-filter="all">All Projects</button>
+            <button class="filter-btn px-6 py-2 text-sm tracking-wider border border-gray-200 transition-all hover:border-gray-800" data-filter="residential">Residential</button>
+            <button class="filter-btn px-6 py-2 text-sm tracking-wider border border-gray-200 transition-all hover:border-gray-800" data-filter="commercial">Commercial</button>
+            <button class="filter-btn px-6 py-2 text-sm tracking-wider border border-gray-200 transition-all hover:border-gray-800" data-filter="interior">Interior</button>
+        </div>
+        
+        <!-- Portfolio Grid -->
+        <div class="columns-1 md:columns-2 lg:columns-3 gap-6" id="portfolio-grid">
+            <!-- Projects will be rendered by JS -->
+        </div>
+    </div>
+</section>
+
+<!-- Process Section -->
+<section id="process" class="py-24 md:py-32 bg-[#1A1A1A] text-white">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="text-center mb-20 fade-in">
+            <p class="text-[#B8935E] tracking-[0.3em] text-xs uppercase mb-4">Our Approach</p>
+            <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl font-light">How We Work</h2>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
+            <div class="fade-in text-center">
+                <p class="font-serif text-6xl text-[#B8935E]/30 mb-6">01</p>
+                <h3 class="font-serif text-xl mb-4">Project Brief</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Share your plans, sketches, reference images, and project requirements with our team.</p>
+            </div>
+            <div class="fade-in text-center">
+                <p class="font-serif text-6xl text-[#B8935E]/30 mb-6">02</p>
+                <h3 class="font-serif text-xl mb-4">3D Modeling</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">We build accurate 3D models based on your architectural documentation and specifications.</p>
+            </div>
+            <div class="fade-in text-center">
+                <p class="font-serif text-6xl text-[#B8935E]/30 mb-6">03</p>
+                <h3 class="font-serif text-xl mb-4">Draft & Feedback</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Review initial drafts and provide feedback for refinements, materials, and camera angles.</p>
+            </div>
+            <div class="fade-in text-center">
+                <p class="font-serif text-6xl text-[#B8935E]/30 mb-6">04</p>
+                <h3 class="font-serif text-xl mb-4">Final Delivery</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Receive high-resolution final renders ready for marketing, presentations, and sales.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="py-24 md:py-32">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+            <div class="fade-in">
+                <p class="text-[#B8935E] tracking-[0.3em] text-xs uppercase mb-4">Why Choose Us</p>
+                <h2 class="font-serif text-4xl md:text-5xl font-light mb-8">Crafting Visual<br><span class="italic">Excellence</span></h2>
+                <p class="text-gray-500 leading-relaxed mb-8">With over a decade of experience serving architects, developers, and designers globally, we understand that every pixel matters. Our team of skilled 3D artists combines technical precision with artistic vision to deliver visuals that sell your vision.</p>
+                
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-full border border-[#B8935E] flex items-center justify-center flex-shrink-0">
+                            <span class="text-[#B8935E] text-sm">✓</span>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-1">Photorealistic Quality</h4>
+                            <p class="text-gray-500 text-sm">Industry-leading rendering quality with attention to every material, light, and detail.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-full border border-[#B8935E] flex items-center justify-center flex-shrink-0">
+                            <span class="text-[#B8935E] text-sm">✓</span>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-1">Fast Turnaround</h4>
+                            <p class="text-gray-500 text-sm">Quick delivery without compromising quality. Rush options available for tight deadlines.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-full border border-[#B8935E] flex items-center justify-center flex-shrink-0">
+                            <span class="text-[#B8935E] text-sm">✓</span>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-1">Unlimited Revisions</h4>
+                            <p class="text-gray-500 text-sm">We refine until you're completely satisfied. Your vision is our priority.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-full border border-[#B8935E] flex items-center justify-center flex-shrink-0">
+                            <span class="text-[#B8935E] text-sm">✓</span>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-1">24/7 Global Support</h4>
+                            <p class="text-gray-500 text-sm">Dedicated project managers available around the clock for our international clients.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="fade-in relative aspect-[4/3]">
+                <img src="images/service-interior.webp" alt="Interior Rendering" class="w-full h-full object-cover">
+                <div class="absolute -bottom-8 -left-8 bg-white p-8 shadow-xl max-w-xs">
+                    <p class="font-serif text-3xl text-[#B8935E] mb-2">12+</p>
+                    <p class="text-gray-500 text-sm">Years of delivering exceptional visualization services to clients worldwide</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="py-24 md:py-32 bg-white">
+    <div class="max-w-5xl mx-auto px-6 lg:px-12 text-center">
+        <div class="fade-in">
+            <p class="text-[#B8935E] tracking-[0.3em] text-xs uppercase mb-4">Testimonials</p>
+            <h2 class="font-serif text-4xl md:text-5xl font-light mb-16">What Clients Say</h2>
+            
+            <div class="text-[#B8935E] text-6xl font-serif mb-8">"</div>
+            <p class="font-serif text-2xl md:text-3xl font-light leading-relaxed mb-8 italic">
+                The PULO 3D team turned our development vision into visuals that far exceeded expectations. Their meticulous eye for detail and deep understanding of our design essence were instrumental to our pre-sales success.
+            </p>
+            <p class="font-medium">James Henderson</p>
+            <p class="text-gray-500 text-sm">Principal Architect, Henderson & Partners</p>
+            
+            <div class="flex justify-center gap-2 mt-12">
+                <span class="w-8 h-px bg-[#B8935E]"></span>
+                <span class="w-2 h-px bg-gray-300"></span>
+                <span class="w-2 h-px bg-gray-300"></span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Section -->
+<section id="pricing" class="py-24 md:py-32">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="text-center mb-20 fade-in">
+            <p class="text-[#B8935E] tracking-[0.3em] text-xs uppercase mb-4">Investment</p>
+            <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl font-light">Transparent Pricing</h2>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div class="fade-in bg-white p-10 border border-gray-100 hover:shadow-xl transition-shadow">
+                <h3 class="font-serif text-2xl mb-2">Starter</h3>
+                <p class="text-gray-500 text-sm mb-8">Perfect for small projects</p>
+                <p class="font-serif text-5xl mb-1">$298</p>
+                <p class="text-gray-500 text-sm mb-8">per image</p>
+                <ul class="space-y-4 mb-10">
+                    <li class="flex items-center gap-3 text-sm text-gray-600"><span class="text-[#B8935E]">✓</span> 1 exterior/interior view</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-600"><span class="text-[#B8935E]">✓</span> 4K resolution</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-600"><span class="text-[#B8935E]">✓</span> 2 rounds of revisions</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-600"><span class="text-[#B8935E]">✓</span> 5 business days delivery</li>
+                </ul>
+                <a href="#contact" class="block text-center border border-gray-900 py-4 text-sm tracking-widest uppercase hover:bg-gray-900 hover:text-white transition-all">Get Started</a>
+            </div>
+            
+            <div class="fade-in bg-[#1A1A1A] text-white p-10 relative transform scale-105 shadow-2xl">
+                <div class="absolute top-0 right-0 bg-[#B8935E] text-xs px-4 py-1 tracking-widest uppercase">Popular</div>
+                <h3 class="font-serif text-2xl mb-2">Professional</h3>
+                <p class="text-gray-400 text-sm mb-8">For serious developments</p>
+                <p class="font-serif text-5xl mb-1">$499</p>
+                <p class="text-gray-400 text-sm mb-8">per image</p>
+                <ul class="space-y-4 mb-10">
+                    <li class="flex items-center gap-3 text-sm text-gray-300"><span class="text-[#B8935E]">✓</span> 1 exterior/interior view</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-300"><span class="text-[#B8935E]">✓</span> 8K ultra-HD resolution</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-300"><span class="text-[#B8935E]">✓</span> Unlimited revisions</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-300"><span class="text-[#B8935E]">✓</span> 3 business days delivery</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-300"><span class="text-[#B8935E]">✓</span> Dedicated project manager</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-300"><span class="text-[#B8935E]">✓</span> Source files included</li>
+                </ul>
+                <a href="#contact" class="block text-center bg-[#B8935E] py-4 text-sm tracking-widest uppercase hover:bg-[#A07B48] transition-all">Get Started</a>
+            </div>
+            
+            <div class="fade-in bg-white p-10 border border-gray-100 hover:shadow-xl transition-shadow">
+                <h3 class="font-serif text-2xl mb-2">Custom Package</h3>
+                <p class="text-gray-500 text-sm mb-8">Large-scale projects</p>
+                <p class="font-serif text-5xl mb-1">Contact</p>
+                <p class="text-gray-500 text-sm mb-8">for pricing</p>
+                <ul class="space-y-4 mb-10">
+                    <li class="flex items-center gap-3 text-sm text-gray-600"><span class="text-[#B8935E]">✓</span> Multiple views & angles</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-600"><span class="text-[#B8935E]">✓</span> Animation / VR available</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-600"><span class="text-[#B8935E]">✓</span> Priority support</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-600"><span class="text-[#B8935E]">✓</span> Custom timeline</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-600"><span class="text-[#B8935E]">✓</span> Dedicated team</li>
+                    <li class="flex items-center gap-3 text-sm text-gray-600"><span class="text-[#B8935E]">✓</span> Full copyright ownership</li>
+                </ul>
+                <a href="#contact" class="block text-center border border-gray-900 py-4 text-sm tracking-widest uppercase hover:bg-gray-900 hover:text-white transition-all">Contact Us</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="py-24 md:py-32 bg-white">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="grid lg:grid-cols-2 gap-16">
+            <div class="fade-in">
+                <p class="text-[#B8935E] tracking-[0.3em] text-xs uppercase mb-4">Get In Touch</p>
+                <h2 class="font-serif text-4xl md:text-5xl font-light mb-8">Let's Create<br><span class="italic">Something Beautiful</span></h2>
+                <p class="text-gray-500 leading-relaxed mb-12">Ready to bring your architectural vision to life? Send us your project details and we'll get back to you within 24 hours with a custom quote and timeline.</p>
+                
+                <div class="space-y-6">
+                    <div>
+                        <p class="text-sm text-gray-400 tracking-wider uppercase mb-2">Email</p>
+                        <p class="text-lg">pulo3dstudio@gmail.com</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400 tracking-wider uppercase mb-2">Phone</p>
+                        <p class="text-lg">+86 13510245761</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400 tracking-wider uppercase mb-2">Hours</p>
+                        <p class="text-lg">24/7 Global Support</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="fade-in">
+                <form id="contact-form" class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-2 tracking-wider uppercase">First Name *</label>
+                            <input type="text" name="firstName" required class="w-full border-b border-gray-200 py-3 bg-transparent focus:border-[#B8935E] transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-2 tracking-wider uppercase">Last Name *</label>
+                            <input type="text" name="lastName" required class="w-full border-b border-gray-200 py-3 bg-transparent focus:border-[#B8935E] transition-colors">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-500 mb-2 tracking-wider uppercase">Email *</label>
+                        <input type="email" name="email" required class="w-full border-b border-gray-200 py-3 bg-transparent focus:border-[#B8935E] transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-500 mb-2 tracking-wider uppercase">Project Type</label>
+                        <select name="projectType" class="w-full border-b border-gray-200 py-3 bg-transparent focus:border-[#B8935E] transition-colors">
+                            <option value="">Select a service...</option>
+                            <option value="exterior">Exterior Rendering</option>
+                            <option value="interior">Interior Visualization</option>
+                            <option value="aerial">Aerial View</option>
+                            <option value="animation">3D Animation</option>
+                            <option value="vr">Virtual Reality</option>
+                            <option value="other">Other / Multiple</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-500 mb-2 tracking-wider uppercase">Project Details *</label>
+                        <textarea name="message" rows="4" required class="w-full border-b border-gray-200 py-3 bg-transparent focus:border-[#B8935E] transition-colors resize-none" placeholder="Tell us about your project, timeline, and requirements..."></textarea>
+                    </div>
+                    <button type="submit" id="submit-btn" class="btn-primary w-full py-4 text-white text-sm tracking-widest uppercase mt-8">
+                        Send Message
+                    </button>
+                    <div id="form-message" class="hidden"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-[#1A1A1A] text-white py-16">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+        <div class="grid md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-2">
+                <p class="font-serif text-2xl tracking-[0.2em] mb-6">PULO <span class="font-light">3D</span></p>
+                <p class="text-gray-400 leading-relaxed max-w-md text-sm">Premium architectural visualization studio serving clients worldwide. We transform architectural concepts into stunning photorealistic imagery that sells.</p>
+            </div>
+            <div>
+                <p class="text-sm tracking-widest uppercase mb-6 text-[#B8935E]">Navigation</p>
+                <ul class="space-y-3 text-gray-400 text-sm">
+                    <li><a href="#services" class="hover:text-white transition-colors">Services</a></li>
+                    <li><a href="#portfolio" class="hover:text-white transition-colors">Portfolio</a></li>
+                    <li><a href="#process" class="hover:text-white transition-colors">Process</a></li>
+                    <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
+                    <li><a href="#contact" class="hover:text-white transition-colors">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <p class="text-sm tracking-widest uppercase mb-6 text-[#B8935E]">Connect</p>
+                <ul class="space-y-3 text-gray-400 text-sm">
+                    <li><a href="#" class="hover:text-white transition-colors">Instagram</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">LinkedIn</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Behance</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Pinterest</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-gray-500 text-sm">© 2026 PULO 3D. All rights reserved.</p>
+            <p class="text-gray-500 text-sm">Crafted with precision for visionary clients worldwide.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+// ============================================
+// Render Portfolio from Config
+// ============================================
+function renderPortfolio(filter = 'all') {
+    const grid = document.getElementById('portfolio-grid');
+    const projects = SITE_CONFIG.portfolio;
+    
+    const filtered = filter === 'all' 
+        ? projects 
+        : projects.filter(p => p.category === filter);
+    
+    grid.innerHTML = filtered.map(project => `
+        <div class="project-card relative mb-6 break-inside-avoid cursor-pointer fade-in visible overflow-hidden group">
+            <img src="${project.image}" alt="${project.title}" class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105">
+            <div class="overlay absolute inset-0 flex flex-col justify-end p-8 text-white">
+                <p class="text-[#D4B896] text-xs tracking-[0.2em] uppercase mb-2">${project.category}</p>
+                <h3 class="font-serif text-2xl mb-1">${project.title}</h3>
+                <p class="text-gray-300 text-sm">${project.location}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Initial render
+renderPortfolio();
+
+// ============================================
+// Portfolio Filter
+// ============================================
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Update active state
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Filter projects
+        const filter = btn.dataset.filter;
+        renderPortfolio(filter);
+    });
+});
+
+// ============================================
+// Navbar Scroll Effect
+// ============================================
+const navbar = document.getElementById('navbar');
+const navLogo = document.getElementById('nav-logo');
+const navLinks = document.querySelectorAll('.nav-link');
+
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 100) {
+        navbar.classList.add('nav-scrolled');
+        navbar.classList.remove('py-6');
+        navbar.classList.add('py-4');
+        navLogo.classList.remove('text-white');
+        navLogo.classList.add('text-gray-900');
+        navLinks.forEach(link => {
+            link.classList.remove('text-white');
+            link.classList.add('text-gray-700');
+        });
+        document.getElementById('mobile-menu-btn').classList.remove('text-white');
+        document.getElementById('mobile-menu-btn').classList.add('text-gray-900');
+    } else {
+        navbar.classList.remove('nav-scrolled');
+        navbar.classList.add('py-6');
+        navbar.classList.remove('py-4');
+        navLogo.classList.add('text-white');
+        navLogo.classList.remove('text-gray-900');
+        navLinks.forEach(link => {
+            link.classList.add('text-white');
+            link.classList.remove('text-gray-700');
+        });
+        document.getElementById('mobile-menu-btn').classList.add('text-white');
+        document.getElementById('mobile-menu-btn').classList.remove('text-gray-900');
+    }
+});
+
+// ============================================
+// Mobile Menu
+// ============================================
+const mobileBtn = document.getElementById('mobile-menu-btn');
+const mobileMenu = document.getElementById('mobile-menu');
+
+mobileBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+});
+
+document.querySelectorAll('#mobile-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+    });
+});
+
+// ============================================
+// Scroll Animation
+// ============================================
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.fade-in').forEach(el => {
+    observer.observe(el);
+});
+
+// ============================================
+// Contact Form Submission (Formspree)
+// ============================================
+const form = document.getElementById('contact-form');
+const submitBtn = document.getElementById('submit-btn');
+const formMessage = document.getElementById('form-message');
+
+// 收件地址：填了 formEndpoint 用 Formspree，否则用 receiveEmail 走 FormSubmit 转发
+function resolveFormEndpoint() {
+    const endpoint = (SITE_CONFIG.formEndpoint || '').trim();
+    if (endpoint && endpoint.indexOf('your-form-id') === -1) {
+        return endpoint;
+    }
+    const mail = (SITE_CONFIG.receiveEmail || '').trim();
+    if (mail && mail.indexOf('@') !== -1) {
+        return 'https://formsubmit.co/ajax/' + encodeURIComponent(mail);
+    }
+    return '';
+}
+
+function showFormMessage(text, isError) {
+    formMessage.className = (isError ? 'error-message' : 'success-message') + ' p-4 rounded text-sm';
+    formMessage.textContent = text;
+    formMessage.classList.remove('hidden');
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const endpoint = resolveFormEndpoint();
+    const contactEmail = (SITE_CONFIG.receiveEmail || SITE_CONFIG.email || '').trim();
+    
+    // 尚未配置收件方式：明确提示，不谎报成功
+    if (!endpoint) {
+        showFormMessage('Enquiry form is not configured yet. Please set formEndpoint or receiveEmail in SITE_CONFIG, or email us directly at ' + contactEmail + '.', true);
+        return;
+    }
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="loading-spinner"></span> Sending...';
+    
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+        
+        const result = await response.json().catch(() => ({}));
+        if (String(result.success) === 'false') {
+            throw new Error(result.message || 'Submission rejected');
+        }
+        
+        showFormMessage('Thank you! Your message has been sent successfully. We will get back to you within 24 hours.', false);
+        form.reset();
+    } catch (error) {
+        // 发送失败如实告知，并给出邮箱兜底
+        showFormMessage('Sorry, your message could not be sent. Please email us directly at ' + contactEmail + '.', true);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Send Message';
+    }
+});
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+</script>
+
+</body>
+</html>
